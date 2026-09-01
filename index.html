@@ -1,0 +1,1122 @@
+<title>EdgeTX Script Builder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg-a:#eef2fb; --bg-b:#e6ebf7;
+  --surface:#ffffff; --surface-soft:#f6f8fd;
+  --surface-glass:rgba(255,255,255,.66);
+  --border:rgba(30,37,56,.09); --border-strong:rgba(30,37,56,.16);
+  --text:#1b2033; --text-2:#5b6478; --text-3:#8a92a6;
+  --accent:#3d6bf0; --accent-2:#8a5cf6;
+  --accent-grad:linear-gradient(135deg,var(--accent),var(--accent-2));
+  --warm:#ff8a3d; --warm-2:#ff5f6d;
+  --warm-grad:linear-gradient(135deg,var(--warm),var(--warm-2));
+  --success:#1fb27a; --warning:#e2a336; --danger:#ef4444;
+  --code-bg:#1b2030; --code-text:#dbe1ec; --code-border:#2a3147;
+  --r-lg:22px; --r-md:16px; --r-sm:11px;
+  --shadow-soft:0 1px 2px rgba(20,26,45,.05), 0 10px 28px -12px rgba(20,26,45,.16);
+  --shadow-lift:0 18px 46px -14px rgba(20,26,45,.28);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg-a:#161a26; --bg-b:#12151f;
+    --surface:#1d2231; --surface-soft:#232840;
+    --surface-glass:rgba(29,34,49,.66);
+    --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
+    --text:#eef1fa; --text-2:#aab0c4; --text-3:#7d8399;
+    --accent:#6f93ff; --accent-2:#a98bff;
+    --warm:#ff9c5c; --warm-2:#ff7e8c;
+    --success:#35d69a; --warning:#f0b94f; --danger:#ff6b6b;
+    --code-bg:#11141d; --code-text:#e1e6f2; --code-border:#2a3147;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg-a:#161a26; --bg-b:#12151f;
+  --surface:#1d2231; --surface-soft:#232840;
+  --surface-glass:rgba(29,34,49,.66);
+  --border:rgba(255,255,255,.08); --border-strong:rgba(255,255,255,.16);
+  --text:#eef1fa; --text-2:#aab0c4; --text-3:#7d8399;
+  --accent:#6f93ff; --accent-2:#a98bff;
+  --warm:#ff9c5c; --warm-2:#ff7e8c;
+  --success:#35d69a; --warning:#f0b94f; --danger:#ff6b6b;
+  --code-bg:#11141d; --code-text:#e1e6f2; --code-border:#2a3147;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:
+    radial-gradient(1100px 620px at 12% -8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+    radial-gradient(900px 560px at 108% 8%, color-mix(in srgb, var(--warm) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, var(--bg-a), var(--bg-b));
+  color:var(--text);
+  font-family:"Manrope",-apple-system,"Segoe UI",sans-serif;
+  min-height:100vh;
+}
+h1,h2,h3,h4{ font-family:"Manrope",sans-serif; text-wrap:balance; margin:0; }
+p{margin:0;}
+::selection{ background:color-mix(in srgb, var(--accent) 30%, transparent); }
+a{color:inherit;}
+button{ font-family:inherit; }
+
+.app{ max-width:1440px; margin:0 auto; padding:20px 24px 64px; }
+.topbar{
+  position:sticky; top:14px; z-index:40;
+  display:flex; align-items:center; gap:14px;
+  padding:12px 18px; margin-bottom:22px;
+  background:var(--surface-glass); backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid var(--border); border-radius:999px;
+  box-shadow:var(--shadow-soft);
+}
+.brand{ display:flex; align-items:center; gap:12px; }
+.brand-mark{
+  width:40px; height:40px; border-radius:13px; flex:none;
+  background:var(--accent-grad); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 16px -6px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.brand-mark svg{ width:22px; height:22px; color:#fff; }
+.brand-text h1{ font-size:17px; font-weight:800; letter-spacing:-.01em; }
+.brand-text p{ font-size:12.5px; color:var(--text-2); font-weight:600; }
+.topbar-spacer{ flex:1; }
+.pill-btn{
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 16px; border-radius:999px; border:1px solid var(--border-strong);
+  background:var(--surface); color:var(--text); font-size:13.5px; font-weight:700;
+  cursor:pointer; transition:transform .15s, box-shadow .15s, background .15s;
+  white-space:nowrap;
+}
+.pill-btn:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+.pill-btn:active{ transform:translateY(0); }
+.pill-btn.primary{ background:var(--accent-grad); color:#fff; border:none; }
+.pill-btn.subtle{ background:var(--surface-soft); }
+.pill-btn.small{ padding:6px 12px; font-size:12.3px; }
+.pill-btn:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+
+.banner{
+  display:flex; align-items:flex-start; gap:12px;
+  background:linear-gradient(120deg, color-mix(in srgb, var(--warm) 16%, var(--surface)), var(--surface));
+  border:1px solid color-mix(in srgb, var(--warm) 35%, var(--border));
+  border-radius:var(--r-md); padding:14px 16px; margin-bottom:18px;
+  box-shadow:var(--shadow-soft);
+}
+.banner svg{ width:20px; height:20px; flex:none; margin-top:1px; color:var(--warm); }
+.banner strong{ font-size:13.5px; }
+.banner p{ font-size:12.8px; color:var(--text-2); margin-top:2px; line-height:1.5; }
+.banner-close{
+  margin-left:auto; border:none; background:none; cursor:pointer; color:var(--text-3);
+  width:26px; height:26px; border-radius:8px; flex:none; font-size:16px; line-height:1;
+}
+.banner-close:hover{ background:var(--border); color:var(--text); }
+
+.toolbar{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md);
+  padding:12px 16px; margin-bottom:18px; box-shadow:var(--shadow-soft);
+}
+.toolbar .grp{ display:flex; align-items:center; gap:8px; }
+.toolbar label{ font-size:12px; font-weight:700; color:var(--text-2); }
+.toolbar input[type="text"], .toolbar select{
+  padding:7px 10px; border-radius:var(--r-sm); border:1px solid var(--border-strong);
+  background:var(--surface-soft); color:var(--text); font-size:12.8px; font-family:inherit;
+}
+.toolbar select{ appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235b6478' stroke-width='2'><path d='M5 8l5 5 5-5'/></svg>"); background-repeat:no-repeat; background-position:right 8px center; padding-right:26px; }
+.toolbar-spacer{ flex:1; }
+.presets{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.composer{ display:grid; grid-template-columns:290px 380px 1fr; gap:18px; align-items:start; }
+@media (max-width:1280px){ .composer{ grid-template-columns:290px 1fr; } .preview-col{ grid-column:1 / -1; } }
+@media (max-width:760px){ .composer{ grid-template-columns:1fr; } .preview-col{ grid-column:auto; } }
+
+.col-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-soft); padding:16px; }
+.col-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; padding:0 2px; }
+.col-head h2{ font-size:13.5px; font-weight:800; }
+.col-head span{ font-size:11.3px; color:var(--text-3); font-weight:700; }
+
+.palette-group{ margin-bottom:16px; }
+.palette-group:last-child{ margin-bottom:0; }
+.palette-group h3{
+  font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--text-3); margin:0 0 8px 2px;
+}
+.palette-item{
+  display:flex; gap:10px; align-items:center; width:100%; text-align:left;
+  padding:10px 10px; border-radius:var(--r-sm); background:var(--surface-soft);
+  border:1px solid var(--border); cursor:pointer; margin-bottom:7px;
+  transition:transform .15s, box-shadow .15s;
+}
+.palette-item:last-child{ margin-bottom:0; }
+.palette-item:hover{ transform:translateY(-1px); box-shadow:var(--shadow-soft); }
+.pal-ic{ width:32px; height:32px; border-radius:9px; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; }
+.pal-ic svg{ width:17px; height:17px; }
+.pal-txt{ min-width:0; flex:1; }
+.pal-txt h4{ font-size:12.6px; font-weight:800; }
+.pal-txt p{ font-size:11px; color:var(--text-3); line-height:1.35; margin-top:1px; }
+.pal-plus{
+  width:24px; height:24px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center;
+  background:var(--surface); border:1px solid var(--border-strong); color:var(--text-2); font-size:15px; font-weight:700;
+}
+
+.stack-empty{ text-align:center; padding:34px 14px; color:var(--text-2); font-size:12.8px; line-height:1.6; }
+.stack-empty svg{ width:44px; height:44px; margin-bottom:8px; color:var(--text-3); }
+.stack-item{ border:1px solid var(--border); border-radius:var(--r-md); margin-bottom:9px; background:var(--surface-soft); overflow:hidden; }
+.stack-item:last-child{ margin-bottom:0; }
+.stack-item[draggable="true"]{ cursor:default; }
+.stack-item.drag-over{ outline:2px dashed var(--accent); outline-offset:-2px; }
+.stack-head{ display:flex; align-items:center; gap:8px; padding:9px 8px 9px 4px; cursor:pointer; }
+.stack-handle{ color:var(--text-3); cursor:grab; padding:4px; flex:none; display:flex; }
+.stack-ic{ width:28px; height:28px; border-radius:8px; flex:none; display:flex; align-items:center; justify-content:center; color:#fff; }
+.stack-ic svg{ width:15px; height:15px; }
+.stack-titles{ flex:1; min-width:0; }
+.stack-titles h4{ font-size:12.4px; font-weight:800; display:flex; align-items:center; gap:6px; }
+.stack-titles p{ font-size:11px; color:var(--text-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.action-flag{ font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--warm); background:color-mix(in srgb, var(--warm) 16%, transparent); padding:1px 6px; border-radius:999px; }
+.stack-btns{ display:flex; gap:1px; flex:none; }
+.icon-btn{ width:25px; height:25px; border-radius:7px; border:none; background:transparent; color:var(--text-3); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.icon-btn svg{ width:14px; height:14px; }
+.icon-btn:hover{ background:var(--border); color:var(--text); }
+.icon-btn:disabled{ opacity:.3; cursor:default; }
+.icon-btn:disabled:hover{ background:transparent; }
+.chev-btn svg{ transition:transform .18s; }
+.stack-item.open .chev-btn svg{ transform:rotate(180deg); }
+.stack-body{ padding:2px 14px 12px; border-top:1px solid var(--border); }
+.stack-body.empty-fields{ padding:10px 14px 12px; font-size:11.8px; color:var(--text-3); }
+
+.field-section{
+  font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--text-3); margin:14px 0 7px;
+}
+.field-section:first-child{ margin-top:10px; }
+.field{ margin-bottom:12px; }
+.field label{ display:block; font-size:12.3px; font-weight:700; margin-bottom:5px; }
+.field .hint{ font-size:11px; color:var(--text-3); margin-top:4px; line-height:1.4; }
+
+input[type="text"], input[type="number"], select, textarea{
+  width:100%; padding:8px 11px; border-radius:var(--r-sm); border:1px solid var(--border-strong);
+  background:var(--surface); color:var(--text); font-size:13px; font-family:inherit;
+}
+textarea{ resize:vertical; min-height:64px; font-family:"JetBrains Mono",monospace; font-size:11.6px; line-height:1.6; }
+select{ appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235b6478' stroke-width='2'><path d='M5 8l5 5 5-5'/></svg>"); background-repeat:no-repeat; background-position:right 10px center; padding-right:30px; }
+.unit-input{ position:relative; }
+.unit-input input{ padding-right:42px; }
+.unit-input span{ position:absolute; right:11px; top:50%; transform:translateY(-50%); font-size:11.5px; color:var(--text-3); font-weight:700; }
+
+.switch{ position:relative; display:inline-flex; width:40px; height:24px; flex:none; }
+.switch input{ opacity:0; width:0; height:0; position:absolute; }
+.switch .track{ position:absolute; inset:0; background:var(--border-strong); border-radius:999px; transition:.18s; cursor:pointer; }
+.switch .thumb{ position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.35); transition:.18s; pointer-events:none; }
+.switch input:checked ~ .track{ background:var(--accent-grad); }
+.switch input:checked ~ .thumb{ transform:translateX(16px); }
+.field-toggle{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0 12px; }
+.field-toggle h4{ font-size:12.3px; font-weight:700; }
+
+.preview-col{ display:flex; flex-direction:column; gap:14px; }
+.lcd-wrap{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-soft); padding:16px; }
+.lcd-note{ display:flex; gap:8px; align-items:flex-start; font-size:11.3px; color:var(--text-3); margin-top:10px; line-height:1.5; }
+.lcd-note svg{ width:14px; height:14px; flex:none; margin-top:1px; color:var(--warm); }
+.lcd-preview{
+  background:#c9d6bd; border:8px solid #2b2f27; border-radius:8px; padding:6px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.2); max-width:420px; margin:0 auto;
+}
+.lcd-preview canvas{ display:block; width:100%; image-rendering:pixelated; }
+
+.code-card{ background:var(--code-bg); border:1px solid var(--code-border); border-radius:var(--r-md); overflow:hidden; box-shadow:var(--shadow-soft); }
+.code-card-head{ display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--code-border); }
+.dot{ width:9px; height:9px; border-radius:50%; }
+.code-card-head .fname{ margin-left:6px; font-family:"JetBrains Mono",monospace; font-size:11.5px; color:#9aa4bd; }
+.code-scroll{ max-height:420px; overflow:auto; }
+.code-scroll pre{ margin:0; padding:16px; font-family:"JetBrains Mono",monospace; font-size:11.8px; line-height:1.62; color:var(--code-text); white-space:pre; }
+.tok-comment{ color:#7d8aad; font-style:italic; }
+.tok-string{ color:#8fd6a8; }
+.tok-keyword{ color:#8ab4ff; font-weight:600; }
+.tok-number{ color:#f0b96b; }
+.tok-call{ color:#d4a6ff; }
+
+.actions{ display:flex; gap:10px; flex-wrap:wrap; }
+.actions .pill-btn{ flex:1; justify-content:center; min-width:130px; }
+.note{ font-size:11.3px; color:var(--text-3); line-height:1.55; }
+.note b{ color:var(--text-2); }
+
+details.install{ border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); padding:2px 0; overflow:hidden; }
+details.install summary{ list-style:none; cursor:pointer; padding:12px 14px; font-size:12.6px; font-weight:700; display:flex; align-items:center; gap:8px; }
+details.install summary::-webkit-details-marker{ display:none; }
+details.install summary .chev{ margin-left:auto; transition:transform .18s; color:var(--text-3); }
+details.install[open] summary .chev{ transform:rotate(180deg); }
+.install-body{ padding:0 16px 14px; font-size:12.3px; color:var(--text-2); line-height:1.7; }
+.install-body ol{ margin:6px 0 0; padding-left:18px; }
+.install-body code{ background:var(--surface-soft); border:1px solid var(--border); padding:1px 6px; border-radius:6px; font-family:"JetBrains Mono",monospace; font-size:11.3px; color:var(--text); }
+
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%,14px);
+  background:var(--text); color:var(--bg-a); padding:11px 18px; border-radius:999px;
+  font-size:13px; font-weight:700; box-shadow:var(--shadow-lift);
+  opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:80;
+}
+.toast.show{ opacity:1; transform:translate(-50%,0); }
+
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(15,18,28,.45); backdrop-filter:blur(3px);
+  display:flex; align-items:center; justify-content:center; padding:20px; z-index:90;
+  opacity:0; pointer-events:none; transition:opacity .18s;
+}
+.modal-backdrop.show{ opacity:1; pointer-events:auto; }
+.modal{ background:var(--surface); border-radius:var(--r-lg); max-width:480px; width:100%; padding:26px; box-shadow:var(--shadow-lift); border:1px solid var(--border); transform:scale(.96); transition:transform .18s; }
+.modal-backdrop.show .modal{ transform:scale(1); }
+.modal h3{ font-size:17px; font-weight:800; margin-bottom:12px; }
+.modal ol{ margin:0; padding-left:20px; font-size:13px; color:var(--text-2); line-height:1.8; }
+.modal-close{ margin-top:18px; width:100%; padding:11px; }
+
+footer.credits{ text-align:center; margin-top:32px; font-size:11.3px; color:var(--text-3); }
+
+@media (prefers-reduced-motion:reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>EdgeTX Script Builder</h1>
+        <p>Stack display &amp; action blocks into your own script</p>
+      </div>
+    </div>
+    <div class="topbar-spacer"></div>
+    <button class="pill-btn" id="howBtn" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 17v-5M12 8h.01"/></svg>
+      How it works
+    </button>
+  </div>
+
+  <div class="banner" id="safetyBanner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>
+    <div>
+      <strong>Test on the ground before your first flight.</strong>
+      <p>These blocks generate a playful starting point for your own EdgeTX sounds &amp; screens — not an official EdgeTX component. Remove props or secure the motor, and try every script without power to the drivetrain before ever flying with it.</p>
+    </div>
+    <button class="banner-close" id="bannerClose" aria-label="Dismiss notice" type="button">✕</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="grp"><label for="scriptName">Script name</label><input type="text" id="scriptName" value="My Screen"></div>
+    <div class="grp"><label for="screenSize">Preview size</label>
+      <select id="screenSize">
+        <option value="std">Standard (128×64)</option>
+        <option value="wide">Wide (212×64)</option>
+      </select>
+    </div>
+    <div class="toolbar-spacer"></div>
+    <div class="presets">
+      <button class="pill-btn small subtle" id="presetBattery" type="button">🔋 Battery screen</button>
+      <button class="pill-btn small subtle" id="presetDashboard" type="button">📊 Flight dashboard</button>
+      <button class="pill-btn small subtle" id="presetClear" type="button">🗑 Clear</button>
+    </div>
+  </div>
+
+  <div class="composer">
+    <div class="col-card" id="paletteCol">
+      <div class="col-head"><h2>Blocks</h2><span>tap to add</span></div>
+      <div id="paletteVisual" class="palette-group"></div>
+      <div id="paletteAction" class="palette-group"></div>
+    </div>
+
+    <div class="col-card" id="stackCol">
+      <div class="col-head"><h2>Your script</h2><span id="stackCount"></span></div>
+      <div id="stackList"></div>
+    </div>
+
+    <div class="preview-col">
+      <div class="lcd-wrap">
+        <div class="lcd-preview"><canvas id="previewCanvas" width="128" height="64"></canvas></div>
+        <div class="lcd-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>
+          <span>This screen — and any Sound/Link/Timer blocks on it — only runs while it is the telemetry screen shown on your radio. Set it as your default/home screen if alarms should always be active.</span>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="code-card-head"><span class="dot" style="background:#ff6159"></span><span class="dot" style="background:#ffbd2e"></span><span class="dot" style="background:#27c93f"></span><span class="fname" id="fnameLabel"></span></div>
+        <div class="code-scroll"><pre id="codeOut"><code></code></pre></div>
+      </div>
+      <div class="actions">
+        <button class="pill-btn primary" id="copyBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>
+          Copy code</button>
+        <button class="pill-btn" id="downloadBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>
+          Download</button>
+      </div>
+      <p class="note"><b>Note:</b> the file saves as <code>.txt</code> (sandbox restriction). Rename it to <code>.lua</code> before copying it to your SD card.</p>
+      <details class="install">
+        <summary>Installation guide<svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="install-body"><ol>
+          <li>Rename the downloaded file to <code id="fnameLabel2"></code> (if it was saved as .txt).</li>
+          <li>Copy it to your SD card at <code>/SCRIPTS/TELEMETRY/</code>.</li>
+          <li>Put sound files as <code>.wav</code> (16-bit PCM) under <code>/SOUNDS/</code>, using the same names as in the script.</li>
+          <li>On your radio: Screens → add a telemetry screen → type "Script" → pick this file.</li>
+          <li>Test on the ground with no motor/propellers before flying.</li>
+        </ol></div>
+      </details>
+    </div>
+  </div>
+
+  <footer class="credits">Generates Lua source for EdgeTX radios · always test each script yourself · not an official EdgeTX project</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-backdrop" id="howModal">
+  <div class="modal">
+    <h3>How to build your script</h3>
+    <ol>
+      <li>Tap <b>blocks</b> on the left to add them to your script, one under another — display blocks like Text or Gauge, and action blocks like Sound Alarm.</li>
+      <li>Open a block in the middle column to set its properties: source, thresholds, sounds, text.</li>
+      <li>Reorder blocks with the arrows or by dragging the handle — the order on screen matches the order in the list.</li>
+      <li>Watch the mock LCD and the Lua code update live on the right.</li>
+      <li><b>Copy</b> the code or <b>download</b> it, rename to <code>.lua</code>, and copy it to <code>/SCRIPTS/TELEMETRY/</code> on your SD card.</li>
+      <li>Assign it as a telemetry screen on your radio, test on the ground, then fly.</li>
+    </ol>
+    <button class="pill-btn primary modal-close" id="howClose" type="button">Got it</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- helpers ---------------- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const luaStr = s => '"' + String(s==null?"":s).replace(/\\/g,"\\\\").replace(/"/g,'\\"').replace(/[\r\n]+/g," ").trim() + '"';
+const num = (v,d) => { const n = parseFloat(v); return Number.isFinite(n) ? n : d; };
+const soundName = s => { s = String(s||"").trim().replace(/[^a-zA-Z0-9_\-]/g,"_"); if(!s) s="sound"; if(!/\.\w+$/.test(s)) s += ".wav"; return s; };
+const srcName = s => String(s||"").trim() || "RxBt";
+const slug = s => (String(s).toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"")) || "my_screen";
+const indent = (str,n) => { const pad = " ".repeat(n); return str.split("\n").map(l => l.length ? pad+l : l).join("\n"); };
+
+const SIZE_H = { normal:9, mid:13, double:19 };
+const SIZE_FLAG = { normal:"", mid:"MIDSIZE", double:"DBLSIZE" };
+const SIZE_PX = { normal:7, mid:10, double:14 };
+const SCREEN_SIZES = { std:{w:128,h:64}, wide:{w:212,h:64} };
+
+/* ---------------- icons ---------------- */
+const ICONS = {
+  text:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  value:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h6a2 2 0 0 1 2 2v6l-9 9-8-8z"/><circle cx="15" cy="8" r="1.3" fill="currentColor" stroke="none"/></svg>',
+  bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4-5"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/></svg>',
+  battery:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="17" height="10" rx="2.5"/><path d="M21 10v4"/><rect x="5" y="10" width="8" height="4" fill="currentColor" stroke="none"/></svg>',
+  divider:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M8 12h8"/><circle cx="20" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>',
+  alarm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 0 0-5 5v3l-2 4h14l-2-4V8a5 5 0 0 0-5-5z"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0"/></svg>',
+  link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9M8 5l4-4 4 4M5 8a9.8 9.8 0 0 1 14 0"/><path d="M8.3 11.2a5.6 5.6 0 0 1 7.4 0"/></svg>',
+  switch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3.2" fill="currentColor" stroke="none"/></svg>',
+  timer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9.5 2h5M19 5l1.5-1.5"/></svg>',
+  random:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>',
+  greet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v7A2.5 2.5 0 0 1 17.5 15H10l-4 4v-4H6.5A2.5 2.5 0 0 1 4 12.5z"/></svg>'
+};
+const VISUAL_GRAD = "linear-gradient(135deg,#3d6bf0,#8a5cf6)";
+const ACTION_GRAD = "linear-gradient(135deg,#ff8a3d,#ff5f6d)";
+
+/* ---------------- field defs ---------------- */
+const SIZE_OPTS = [["normal","Normal"],["mid","Medium"],["double","Large"]];
+const ALIGN_OPTS = [["left","Left"],["center","Center"]];
+
+/* ---------------- block registry ---------------- */
+const BLOCKS = {
+
+text:{ kind:"visual", label:"Text", tagline:"A line of static text, any size", icon:"text",
+  fields:[
+    {id:"content", type:"text", label:"Text", def:"My Model"},
+    {id:"size", type:"select", label:"Size", options:SIZE_OPTS, def:"mid"},
+    {id:"align", type:"select", label:"Alignment", options:ALIGN_OPTS, def:"center"}
+  ],
+  summarize:v => (String(v.content||"").trim() || "Text").slice(0,30),
+  emit(uid,v){
+    const content = String(v.content||"").trim() || "Text";
+    const size = v.size || "mid", align = v.align || "center";
+    const h = SIZE_H[size], sizeFlag = SIZE_FLAG[size];
+    const parts = []; if(sizeFlag) parts.push(sizeFlag); if(align==="center") parts.push("CENTER");
+    const flags = parts.length ? parts.join(" + ") : "0";
+    const x = align === "center" ? "LCD_W / 2" : "2";
+    return { code:`lcd.drawText(${x}, y, ${luaStr(content)}, ${flags})\ny = y + ${h}`, state:[], needsInit:false };
+  },
+  draw(ctx,w,h,y,v){
+    const content = String(v.content||"").trim() || "Text";
+    const size = v.size||"mid", align = v.align||"center";
+    ctx.font = SIZE_PX[size] + "px 'JetBrains Mono', monospace";
+    ctx.textAlign = align === "center" ? "center" : "left";
+    ctx.fillText(content, align === "center" ? w/2 : 2, y);
+    return y + SIZE_H[size];
+  }
+},
+
+value:{ kind:"visual", label:"Value", tagline:"Label + live telemetry value", icon:"value",
+  fields:[
+    {id:"label", type:"text", label:"Label", def:"Battery"},
+    {id:"source", type:"text", label:"Telemetry source", def:"RxBt"},
+    {id:"unit", type:"text", label:"Unit (optional)", def:"V"},
+    {id:"size", type:"select", label:"Size", options:SIZE_OPTS, def:"normal"},
+    {id:"align", type:"select", label:"Alignment", options:ALIGN_OPTS, def:"left"}
+  ],
+  summarize:v => `${String(v.label||"Value").trim()} → ${srcName(v.source)}`,
+  emit(uid,v){
+    const label = String(v.label||"").trim() || "Value";
+    const source = srcName(v.source), unit = String(v.unit||"").trim();
+    const size = v.size || "normal", align = v.align || "left";
+    const h = SIZE_H[size], sizeFlag = SIZE_FLAG[size];
+    const parts = []; if(sizeFlag) parts.push(sizeFlag); if(align==="center") parts.push("CENTER");
+    const flags = parts.length ? parts.join(" + ") : "0";
+    const x = align === "center" ? "LCD_W / 2" : "2";
+    let expr = `${luaStr(label+": ")} .. tostring(getValue(${luaStr(source)}))`;
+    if(unit) expr += ` .. ${luaStr(" "+unit)}`;
+    return { code:`lcd.drawText(${x}, y, ${expr}, ${flags})\ny = y + ${h}`, state:[], needsInit:false };
+  },
+  draw(ctx,w,h,y,v){
+    const label = String(v.label||"").trim() || "Value";
+    const source = srcName(v.source), unit = String(v.unit||"").trim();
+    const size = v.size||"normal", align = v.align||"left";
+    ctx.font = SIZE_PX[size] + "px 'JetBrains Mono', monospace";
+    ctx.textAlign = align === "center" ? "center" : "left";
+    ctx.fillText(`${label}: <${source}>${unit?" "+unit:""}`, align === "center" ? w/2 : 2, y);
+    return y + SIZE_H[size];
+  }
+},
+
+bar:{ kind:"visual", label:"Gauge", tagline:"Horizontal bar gauge for any value", icon:"bar",
+  fields:[
+    {id:"label", type:"text", label:"Label", def:"Battery"},
+    {id:"source", type:"text", label:"Telemetry source", def:"RxBt"},
+    {id:"min", type:"number", label:"Minimum", step:0.1, def:3.0},
+    {id:"max", type:"number", label:"Maximum", step:0.1, def:4.2},
+    {id:"showLabel", type:"toggle", label:"Show label above bar", def:true}
+  ],
+  summarize:v => `${String(v.label||"Gauge").trim()} → ${srcName(v.source)}`,
+  emit(uid,v){
+    const label = String(v.label||"").trim() || "Gauge";
+    const source = srcName(v.source), min = num(v.min,3.0), max = num(v.max,4.2), showLabel = !!v.showLabel;
+    const lines = [];
+    if(showLabel){ lines.push(`lcd.drawText(2, y, ${luaStr(label)}, SMLSIZE)`, `y = y + 8`); }
+    lines.push(
+      `do`,
+      `  local val = getValue(${luaStr(source)})`,
+      `  local pct = (val - ${min}) / (${max} - ${min})`,
+      `  if pct < 0 then pct = 0 end`,
+      `  if pct > 1 then pct = 1 end`,
+      `  lcd.drawRectangle(2, y, LCD_W - 4, 7)`,
+      `  lcd.drawFilledRectangle(3, y + 1, math.floor((LCD_W - 6) * pct), 5)`,
+      `end`,
+      `y = y + 9`
+    );
+    return { code: lines.join("\n"), state:[], needsInit:false };
+  },
+  draw(ctx,w,h,y,v){
+    const label = String(v.label||"").trim() || "Gauge", showLabel = !!v.showLabel;
+    let yy = y;
+    if(showLabel){ ctx.font="7px 'JetBrains Mono', monospace"; ctx.textAlign="left"; ctx.fillText(label,2,yy); yy+=8; }
+    ctx.strokeRect(2, yy, w-4, 7);
+    ctx.fillRect(3, yy+1, (w-6)*0.62, 5);
+    return yy+9;
+  }
+},
+
+battery:{ kind:"visual", label:"Battery Icon", tagline:"Battery glyph filled by percentage", icon:"battery",
+  fields:[
+    {id:"label", type:"text", label:"Label (optional)", def:""},
+    {id:"source", type:"text", label:"Telemetry source", def:"RxBt"},
+    {id:"min", type:"number", label:"Empty at", step:0.1, def:3.0},
+    {id:"max", type:"number", label:"Full at", step:0.1, def:4.2}
+  ],
+  summarize:v => `${srcName(v.source)}`,
+  emit(uid,v){
+    const label = String(v.label||"").trim();
+    const source = srcName(v.source), min = num(v.min,3.0), max = num(v.max,4.2);
+    const prefix = label ? `${luaStr(label+": ")} .. ` : "";
+    const lines = [
+      `do`,
+      `  local val = getValue(${luaStr(source)})`,
+      `  local pct = (val - ${min}) / (${max} - ${min})`,
+      `  if pct < 0 then pct = 0 end`,
+      `  if pct > 1 then pct = 1 end`,
+      `  lcd.drawRectangle(2, y, 16, 9)`,
+      `  lcd.drawFilledRectangle(18, y + 3, 2, 4)`,
+      `  lcd.drawFilledRectangle(3, y + 1, math.floor(14 * pct), 7)`,
+      `  lcd.drawText(24, y, ${prefix}tostring(math.floor(pct * 100)) .. "%", 0)`,
+      `end`,
+      `y = y + 12`
+    ];
+    return { code: lines.join("\n"), state:[], needsInit:false };
+  },
+  draw(ctx,w,h,y,v){
+    const label = String(v.label||"").trim();
+    ctx.strokeRect(2,y,16,9); ctx.fillRect(18,y+3,2,4); ctx.fillRect(3,y+1,14*0.62,7);
+    ctx.font="7px 'JetBrains Mono', monospace"; ctx.textAlign="left";
+    ctx.fillText((label?label+": ":"")+"62%", 24, y+1);
+    return y+12;
+  }
+},
+
+divider:{ kind:"visual", label:"Divider", tagline:"A thin horizontal rule", icon:"divider",
+  fields:[],
+  summarize:() => "—",
+  emit(uid,v){ return { code:`lcd.drawLine(0, y + 2, LCD_W, y + 2, SOLID, FORCE)\ny = y + 6`, state:[], needsInit:false }; },
+  draw(ctx,w,h,y,v){ ctx.beginPath(); ctx.moveTo(0,y+2); ctx.lineTo(w,y+2); ctx.stroke(); return y+6; }
+},
+
+alarm:{ kind:"action", label:"Sound Alarm", tagline:"Play a sound while a value stays past a threshold", icon:"alarm",
+  fields:[
+    {id:"source", type:"text", label:"Telemetry source", def:"RxBt"},
+    {id:"threshold", type:"number", label:"Warning threshold", unit:"", step:0.1, def:3.6},
+    {id:"hysteresis", type:"number", label:"Hysteresis (gap before clearing)", step:0.05, def:0.1},
+    {id:"interval", type:"number", label:"Repeat every", unit:"s", step:1, def:10},
+    {id:"sound", type:"text", label:"Sound file (in /SOUNDS/)", def:"battery"},
+    {id:"vibrate", type:"toggle", label:"Also vibrate", def:true}
+  ],
+  summarize:v => `${srcName(v.source)} ≤ ${num(v.threshold,3.6)}`,
+  emit(uid,v){
+    const source = srcName(v.source), th = num(v.threshold,3.6), hy = Math.abs(num(v.hysteresis,0.1)), iv = Math.max(1,num(v.interval,10)), snd = soundName(v.sound), vib = !!v.vibrate;
+    const s1 = `b${uid}_warn`, s2 = `b${uid}_lastPlay`;
+    const state = [`local ${s1} = false`, `local ${s2} = 0`];
+    const lines = [
+      `do`,
+      `  local value = getValue(${luaStr(source)})`,
+      `  local now = getTime()`,
+      `  if not ${s1} and value <= ${th} then`,
+      `    ${s1} = true`,
+      `  elseif ${s1} and value >= ${th} + ${hy} then`,
+      `    ${s1} = false`,
+      `  end`,
+      `  if ${s1} and (now - ${s2}) >= ${iv} * 100 then`,
+      `    playFile(${luaStr(snd)})`
+    ];
+    if(vib) lines.push(`    playHaptic(15, 0)`);
+    lines.push(`    ${s2} = now`, `  end`, `end`);
+    return { code: lines.join("\n"), state, needsInit:false };
+  }
+},
+
+link:{ kind:"action", label:"Link Alarm", tagline:"Staged warnings for a weak radio link", icon:"link",
+  fields:[
+    {id:"source", type:"select", label:"Source", options:["RSSI","1RSS","RQly","2RSS"], custom:true, def:"RSSI"},
+    {id:"warn", type:"number", label:"Warning threshold", def:42},
+    {id:"crit", type:"number", label:"Critical threshold", def:35},
+    {id:"interval", type:"number", label:"Repeat every", unit:"s", step:1, def:5}
+  ],
+  summarize:v => `${srcName(v.source)} ≤ ${num(v.warn,42)}`,
+  emit(uid,v){
+    const source = srcName(v.source), warn = num(v.warn,42), crit = num(v.crit,35), iv = Math.max(1,num(v.interval,5));
+    const s1 = `b${uid}_lastWarn`, s2 = `b${uid}_lastCrit`;
+    const state = [`local ${s1} = 0`, `local ${s2} = 0`];
+    const lines = [
+      `do`,
+      `  local value = getValue(${luaStr(source)})`,
+      `  local now = getTime()`,
+      `  if value > 0 and value <= ${crit} then`,
+      `    if (now - ${s2}) >= ${iv} * 100 then`,
+      `      playTone(2000, 100, 0)`,
+      `      playFile("critlink.wav")`,
+      `      ${s2} = now`,
+      `    end`,
+      `  elseif value > 0 and value <= ${warn} then`,
+      `    if (now - ${s1}) >= ${iv} * 100 then`,
+      `      playFile("weaklink.wav")`,
+      `      ${s1} = now`,
+      `    end`,
+      `  elseif value == 0 then`,
+      `    if (now - ${s2}) >= ${iv} * 100 then`,
+      `      playFile("nolink.wav")`,
+      `      ${s2} = now`,
+      `    end`,
+      `  end`,
+      `end`
+    ];
+    return { code: lines.join("\n"), state, needsInit:false };
+  }
+},
+
+switch:{ kind:"action", label:"Switch Sound", tagline:"A dedicated sound for each switch position", icon:"switch",
+  fields:[
+    {id:"source", type:"text", label:"Switch source", def:"sa"},
+    {id:"threeWay", type:"toggle", label:"3-position switch", def:true},
+    {id:"soundA", type:"text", label:"Sound for position A", def:"posa"},
+    {id:"soundB", type:"text", label:"Sound for position B", def:"posb"},
+    {id:"soundC", type:"text", label:"Sound for position C (3-position)", def:"posc"}
+  ],
+  summarize:v => `${srcName(v.source)} switch`,
+  emit(uid,v){
+    const source = srcName(v.source), three = !!v.threeWay, a=soundName(v.soundA), b=soundName(v.soundB), c=soundName(v.soundC);
+    const s1 = `b${uid}_lastPos`;
+    const state = [`local ${s1} = nil`];
+    const lines = [`do`, `  local sv = getValue(${luaStr(source)})`, `  local pos`];
+    if(three) lines.push(`  if sv < -256 then pos = "A"`, `  elseif sv > 256 then pos = "C"`, `  else pos = "B" end`);
+    else lines.push(`  pos = (sv > 0) and "B" or "A"`);
+    lines.push(`  if pos ~= ${s1} then`, `    if pos == "A" then playFile(${luaStr(a)})`, `    elseif pos == "B" then playFile(${luaStr(b)})`);
+    lines.push(three ? `    else playFile(${luaStr(c)}) end` : `    end`);
+    lines.push(`    ${s1} = pos`, `  end`, `end`);
+    return { code: lines.join("\n"), state, needsInit:false };
+  }
+},
+
+timer:{ kind:"action", label:"Voice Timer", tagline:"Announce elapsed time or a countdown", icon:"timer",
+  fields:[
+    {id:"mode", type:"select", label:"Counting mode", options:[["up","Count up (stopwatch)"],["down","Countdown"]], def:"up"},
+    {id:"start", type:"number", label:"Start time (countdown only)", unit:"min", step:1, def:5},
+    {id:"interval", type:"number", label:"Announce every", unit:"s", step:5, def:30},
+    {id:"warn", type:"number", label:"Extra warning tone before end at", unit:"s", step:5, def:30},
+    {id:"endSound", type:"text", label:"Sound on countdown end", def:"land"}
+  ],
+  summarize:v => v.mode==="down" ? "Countdown" : "Count up",
+  emit(uid,v){
+    const mode = v.mode === "down" ? "down" : "up";
+    const iv = Math.max(5,num(v.interval,30)), start = Math.max(1,num(v.start,5))*60, warn = Math.max(0,num(v.warn,30)), end = soundName(v.endSound);
+    const s1 = `b${uid}_start`, s2 = `b${uid}_lastSlot`, s3 = `b${uid}_warned`;
+    const state = [`local ${s1} = nil`, `local ${s2} = -1`, `local ${s3} = false`];
+    const lines = [
+      `do`,
+      `  local now = getTime()`,
+      `  if ${s1} == nil then ${s1} = now end`,
+      `  local elapsed = math.floor((now - ${s1}) / 100)`,
+      `  local remaining = ${mode==="down" ? `${start} - elapsed` : `elapsed`}`
+    ];
+    if(mode === "down"){
+      lines.push(
+        `  if remaining <= 0 then`,
+        `    if not ${s3} then`,
+        `      playFile(${luaStr(end)})`,
+        `      ${s3} = true`,
+        `    end`,
+        `  else`,
+        `    local slot = math.floor(elapsed / ${iv})`,
+        `    if slot ~= ${s2} then`,
+        `      ${s2} = slot`,
+        `      playDuration(remaining, 0)`,
+        `    end`,
+        `    if remaining == ${warn} then`,
+        `      playTone(1300, 200, 0)`,
+        `    end`,
+        `  end`
+      );
+    } else {
+      lines.push(
+        `  local slot = math.floor(elapsed / ${iv})`,
+        `  if slot ~= ${s2} then`,
+        `    ${s2} = slot`,
+        `    playDuration(remaining, 0)`,
+        `  end`
+      );
+    }
+    lines.push(`end`);
+    return { code: lines.join("\n"), state, needsInit:false };
+  }
+},
+
+random:{ kind:"action", label:"Random Sound", tagline:"A random sound on a switch press — just for fun", icon:"random",
+  fields:[
+    {id:"source", type:"text", label:"Switch/button source", def:"sh"},
+    {id:"cooldown", type:"number", label:"Cooldown", unit:"s", step:0.5, def:2},
+    {id:"sounds", type:"textarea", label:"Sounds (one file per line)", def:"yeehaw\nnice\nsiren\ntadaa"}
+  ],
+  summarize:v => `${srcName(v.source)} trigger`,
+  emit(uid,v){
+    const source = srcName(v.source), cd = Math.max(0.2,num(v.cooldown,2));
+    const sounds = String(v.sounds||"").split("\n").map(s=>s.trim()).filter(Boolean).map(soundName);
+    const list = sounds.length ? sounds : ["tadaa.wav"];
+    const tbl = `SOUNDS_b${uid}`, s1 = `b${uid}_lastTrigger`, s2 = `b${uid}_wasOn`;
+    const state = [
+      `local ${tbl} = { ${list.map(luaStr).join(", ")} }`,
+      `local ${s1} = 0`,
+      `local ${s2} = false`
+    ];
+    const lines = [
+      `do`,
+      `  local on = getValue(${luaStr(source)}) > 0`,
+      `  local now = getTime()`,
+      `  if on and not ${s2} and (now - ${s1}) >= ${cd} * 100 then`,
+      `    playFile(${tbl}[math.random(#${tbl})])`,
+      `    ${s1} = now`,
+      `  end`,
+      `  ${s2} = on`,
+      `end`
+    ];
+    return { code: lines.join("\n"), state, needsInit:true };
+  }
+},
+
+greet:{ kind:"action", label:"Greeting Sound", tagline:"Play a sound once when this screen loads", icon:"greet",
+  fields:[ {id:"sound", type:"text", label:"Sound file", def:"welcome"} ],
+  summarize:v => soundName(v.sound),
+  emit(uid,v){
+    const snd = soundName(v.sound), s1 = `b${uid}_played`;
+    const state = [`local ${s1} = false`];
+    const lines = [`if not ${s1} then`, `  playFile(${luaStr(snd)})`, `  ${s1} = true`, `end`];
+    return { code: lines.join("\n"), state, needsInit:false };
+  }
+}
+
+};
+
+const VISUAL_ORDER = ["text","value","bar","battery","divider"];
+const ACTION_ORDER = ["alarm","link","switch","timer","random","greet"];
+
+function defaultsFor(type){
+  const o = {};
+  BLOCKS[type].fields.forEach(f => o[f.id] = f.def);
+  return o;
+}
+
+/* ---------------- state ---------------- */
+let uidCounter = 1;
+let stack = [];
+let scriptName = "My Screen";
+let screenSizeKey = "std";
+
+function addBlock(type, values, opts){
+  const inst = { uid: uidCounter++, type, values: values ? Object.assign(defaultsFor(type), values) : defaultsFor(type), open: !(opts && opts.collapsed) };
+  stack.push(inst);
+  return inst;
+}
+
+/* ---------------- syntax highlight ---------------- */
+function highlightLua(src){
+  const re = /(--.*$)|("(?:[^"\\]|\\.)*")|('(?:[^'\\]|\\.)*')|\b(local|function|end|return|if|then|else|elseif|while|do|for|in|and|or|not|true|false|nil|break)\b|\b(\d+\.?\d*)\b|\b(getValue|playFile|playTone|playDuration|playHaptic|playNumber|getTime|ipairs|tostring|math\.\w+|lcd\.\w+)\b/gm;
+  let out = "", last = 0, m;
+  while ((m = re.exec(src))) {
+    out += esc(src.slice(last, m.index));
+    if (m[1]) out += '<span class="tok-comment">' + esc(m[1]) + "</span>";
+    else if (m[2] || m[3]) out += '<span class="tok-string">' + esc(m[2]||m[3]) + "</span>";
+    else if (m[4]) out += '<span class="tok-keyword">' + esc(m[4]) + "</span>";
+    else if (m[5]) out += '<span class="tok-number">' + esc(m[5]) + "</span>";
+    else if (m[6]) out += '<span class="tok-call">' + esc(m[6]) + "</span>";
+    last = re.lastIndex;
+  }
+  out += esc(src.slice(last));
+  return out;
+}
+
+/* ---------------- script assembly ---------------- */
+function buildFullScript(){
+  const name = String(scriptName||"My Screen").trim() || "My Screen";
+  const fname = slug(name) + ".lua";
+  let stateLines = [], needsInit = false, bodyParts = [], visualCount = 0;
+
+  stack.forEach(inst => {
+    const def = BLOCKS[inst.type];
+    const r = def.emit(inst.uid, inst.values);
+    if(r.state && r.state.length) stateLines.push(...r.state);
+    if(r.needsInit) needsInit = true;
+    if(def.kind === "visual") visualCount++;
+    bodyParts.push(r.code);
+  });
+
+  let body = "local y = 2\nlcd.clear()\n";
+  if(visualCount === 0){
+    body += '\nlcd.drawText(LCD_W / 2, LCD_H / 2 - 4, "Background script - no display", MIDSIZE + CENTER)\n';
+  }
+  if(bodyParts.length) body += "\n" + bodyParts.join("\n\n");
+
+  let out =
+    "-- " + name + "\n" +
+    "-- Built with the EdgeTX Script Builder (community tool, not an official EdgeTX component)\n" +
+    "-- Save to:  /SCRIPTS/TELEMETRY/" + fname + "\n" +
+    "-- Assign:   Screens -> Add telemetry screen -> type \"Script\"\n" +
+    "-- Note:     runs only while this screen is the one shown on your radio\n\n";
+
+  if(stateLines.length) out += stateLines.join("\n") + "\n\n";
+  if(needsInit) out += "local function init()\n  math.randomseed(getTime())\nend\n\n";
+  out += "local function run(event)\n" + indent(body.trim() + "\n", 2) + "end\n\nreturn { run = run" + (needsInit ? ", init = init" : "") + " }\n";
+
+  return { code: out, fname };
+}
+
+function drawPreview(){
+  const cvs = document.getElementById("previewCanvas");
+  if(!cvs) return;
+  const { w, h } = SCREEN_SIZES[screenSizeKey];
+  cvs.width = w; cvs.height = h;
+  const ctx = cvs.getContext("2d");
+  ctx.fillStyle = "#c9d6bd"; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle = "#2b2f27"; ctx.strokeStyle = "#2b2f27"; ctx.lineWidth = 1;
+  ctx.textBaseline = "top";
+  const visuals = stack.filter(inst => BLOCKS[inst.type].kind === "visual");
+  if(visuals.length === 0){
+    ctx.font = "10px 'JetBrains Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Background script - no display", w/2, h/2 - 5);
+    return;
+  }
+  let y = 2;
+  visuals.forEach(inst => { y = BLOCKS[inst.type].draw(ctx, w, h, y, inst.values); });
+}
+
+/* ---------------- palette rendering ---------------- */
+const paletteVisual = document.getElementById("paletteVisual");
+const paletteAction = document.getElementById("paletteAction");
+
+function renderPaletteGroup(container, order, title, grad){
+  let html = '<h3>' + esc(title) + '</h3>';
+  order.forEach(type => {
+    const b = BLOCKS[type];
+    html +=
+      '<button class="palette-item" type="button" data-add="' + type + '">' +
+        '<div class="pal-ic" style="background:' + grad + '">' + ICONS[b.icon] + '</div>' +
+        '<div class="pal-txt"><h4>' + esc(b.label) + '</h4><p>' + esc(b.tagline) + '</p></div>' +
+        '<div class="pal-plus">+</div>' +
+      '</button>';
+  });
+  container.innerHTML = html;
+}
+renderPaletteGroup(paletteVisual, VISUAL_ORDER, "Display blocks", VISUAL_GRAD);
+renderPaletteGroup(paletteAction, ACTION_ORDER, "Action blocks", ACTION_GRAD);
+
+document.getElementById("paletteCol").addEventListener("click", e => {
+  const btn = e.target.closest("[data-add]");
+  if(!btn) return;
+  addBlock(btn.dataset.add);
+  renderAll();
+});
+
+/* ---------------- field control renderer ---------------- */
+function fieldControl(uid, f, val){
+  if(f.type === "toggle"){
+    return (
+      '<div class="field-toggle"><h4>' + esc(f.label) + '</h4>' +
+      '<label class="switch"><input type="checkbox" data-uid="' + uid + '" data-field="' + f.id + '" ' + (val ? "checked" : "") + '><span class="track"></span><span class="thumb"></span></label></div>'
+    );
+  }
+  if(f.type === "select"){
+    const opts = f.options.map(o => {
+      const [ov, ol] = Array.isArray(o) ? o : [o, o];
+      return '<option value="' + esc(ov) + '" ' + (val === ov ? "selected" : "") + '>' + esc(ol) + '</option>';
+    }).join("");
+    return '<div class="field"><label>' + esc(f.label) + '</label><select data-uid="' + uid + '" data-field="' + f.id + '">' + opts + '</select></div>';
+  }
+  if(f.type === "textarea"){
+    return '<div class="field"><label>' + esc(f.label) + '</label><textarea data-uid="' + uid + '" data-field="' + f.id + '" rows="4">' + esc(val) + '</textarea></div>';
+  }
+  if(f.type === "number"){
+    return (
+      '<div class="field"><label>' + esc(f.label) + '</label>' +
+      '<div class="unit-input"><input type="number" step="' + (f.step||1) + '" data-uid="' + uid + '" data-field="' + f.id + '" value="' + esc(val) + '">' +
+      (f.unit ? '<span>' + esc(f.unit) + '</span>' : '') + '</div></div>'
+    );
+  }
+  return '<div class="field"><label>' + esc(f.label) + '</label><input type="text" data-uid="' + uid + '" data-field="' + f.id + '" value="' + esc(val) + '"></div>';
+}
+
+/* ---------------- stack rendering ---------------- */
+const stackList = document.getElementById("stackList");
+let dragUid = null;
+
+function renderStack(){
+  document.getElementById("stackCount").textContent = stack.length + (stack.length===1?" block":" blocks");
+  if(stack.length === 0){
+    stackList.innerHTML =
+      '<div class="stack-empty">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>' +
+      'Your script is empty.<br>Tap a block on the left to add it here.</div>';
+    return;
+  }
+  stackList.innerHTML = stack.map((inst, i) => {
+    const def = BLOCKS[inst.type];
+    const grad = def.kind === "visual" ? VISUAL_GRAD : ACTION_GRAD;
+    const summary = def.summarize(inst.values);
+    let body;
+    if(def.fields.length === 0){
+      body = '<div class="stack-body empty-fields">No settings for this block.</div>';
+    } else {
+      body = '<div class="stack-body">' + def.fields.map(f => fieldControl(inst.uid, f, inst.values[f.id])).join("") + '</div>';
+    }
+    return (
+      '<div class="stack-item' + (inst.open ? " open" : "") + '" data-uid="' + inst.uid + '" draggable="true">' +
+        '<div class="stack-head" data-toggle="' + inst.uid + '">' +
+          '<span class="stack-handle">⋮⋮</span>' +
+          '<div class="stack-ic" style="background:' + grad + '">' + ICONS[def.icon] + '</div>' +
+          '<div class="stack-titles"><h4>' + esc(def.label) + (def.kind === "action" ? ' <span class="action-flag">no screen</span>' : '') + '</h4><p>' + esc(summary) + '</p></div>' +
+          '<div class="stack-btns">' +
+            '<button class="icon-btn" data-up="' + inst.uid + '" title="Move up" ' + (i===0?"disabled":"") + ' type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>' +
+            '<button class="icon-btn" data-down="' + inst.uid + '" title="Move down" ' + (i===stack.length-1?"disabled":"") + ' type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>' +
+            '<button class="icon-btn" data-del="' + inst.uid + '" title="Remove" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+            '<button class="icon-btn chev-btn" title="Expand" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>' +
+          '</div>' +
+        '</div>' +
+        (inst.open ? body : '') +
+      '</div>'
+    );
+  }).join("");
+}
+
+stackList.addEventListener("click", e => {
+  const up = e.target.closest("[data-up]"), down = e.target.closest("[data-down]"), del = e.target.closest("[data-del]"), tog = e.target.closest("[data-toggle]");
+  if(up){ const idx = stack.findIndex(x=>x.uid==up.dataset.up); if(idx>0){ [stack[idx-1],stack[idx]]=[stack[idx],stack[idx-1]]; renderAll(); } return; }
+  if(down){ const idx = stack.findIndex(x=>x.uid==down.dataset.down); if(idx<stack.length-1){ [stack[idx+1],stack[idx]]=[stack[idx],stack[idx+1]]; renderAll(); } return; }
+  if(del){ stack = stack.filter(x=>x.uid!=del.dataset.del); renderAll(); return; }
+  if(tog){
+    if(e.target.closest(".stack-btns")) return;
+    const inst = stack.find(x=>x.uid==tog.dataset.toggle);
+    if(inst) inst.open = !inst.open;
+    renderAll();
+  }
+});
+
+stackList.addEventListener("input", e => {
+  const el = e.target.closest("[data-field]");
+  if(!el) return;
+  const inst = stack.find(x=>x.uid==el.dataset.uid);
+  if(!inst) return;
+  const f = BLOCKS[inst.type].fields.find(x=>x.id===el.dataset.field);
+  inst.values[f.id] = f.type === "toggle" ? el.checked : el.value;
+  renderCodeAndPreview();
+  const head = stackList.querySelector('.stack-item[data-uid="'+inst.uid+'"] .stack-titles p');
+  if(head) head.textContent = BLOCKS[inst.type].summarize(inst.values);
+});
+
+stackList.addEventListener("dragstart", e => {
+  const item = e.target.closest(".stack-item");
+  if(!item) return;
+  dragUid = item.dataset.uid;
+  e.dataTransfer.effectAllowed = "move";
+});
+stackList.addEventListener("dragover", e => {
+  const item = e.target.closest(".stack-item");
+  if(!item || !dragUid) return;
+  e.preventDefault();
+  item.classList.add("drag-over");
+});
+stackList.addEventListener("dragleave", e => {
+  const item = e.target.closest(".stack-item");
+  if(item) item.classList.remove("drag-over");
+});
+stackList.addEventListener("drop", e => {
+  const item = e.target.closest(".stack-item");
+  if(!item || !dragUid) return;
+  e.preventDefault();
+  item.classList.remove("drag-over");
+  const targetUid = item.dataset.uid;
+  if(targetUid === dragUid) return;
+  const from = stack.findIndex(x=>String(x.uid)===String(dragUid));
+  const to = stack.findIndex(x=>String(x.uid)===String(targetUid));
+  if(from<0 || to<0) return;
+  const [moved] = stack.splice(from,1);
+  stack.splice(to,0,moved);
+  dragUid = null;
+  renderAll();
+});
+stackList.addEventListener("dragend", () => { dragUid = null; });
+
+/* ---------------- code panel + actions ---------------- */
+function renderCodeAndPreview(){
+  const { code, fname } = buildFullScript();
+  document.getElementById("codeOut").querySelector("code").innerHTML = highlightLua(code);
+  document.getElementById("fnameLabel").textContent = fname;
+  document.getElementById("fnameLabel2").textContent = fname;
+  drawPreview();
+}
+
+function renderAll(){
+  renderStack();
+  renderCodeAndPreview();
+}
+
+/* ---------------- toolbar ---------------- */
+const scriptNameInput = document.getElementById("scriptName");
+scriptNameInput.addEventListener("input", () => { scriptName = scriptNameInput.value; renderCodeAndPreview(); });
+const screenSizeSelect = document.getElementById("screenSize");
+screenSizeSelect.addEventListener("change", () => { screenSizeKey = screenSizeSelect.value; drawPreview(); });
+
+document.getElementById("presetBattery").addEventListener("click", () => {
+  stack = []; uidCounter = 1;
+  addBlock("text", { content:"Battery", size:"mid", align:"center" });
+  addBlock("bar", { label:"Battery", source:"RxBt", min:3.0, max:4.2, showLabel:true });
+  addBlock("battery", { label:"", source:"RxBt", min:3.0, max:4.2 });
+  addBlock("alarm", { source:"RxBt", threshold:3.6, hysteresis:0.1, interval:10, sound:"battery", vibrate:true }, { collapsed:true });
+  renderAll();
+});
+document.getElementById("presetDashboard").addEventListener("click", () => {
+  stack = []; uidCounter = 1;
+  addBlock("text", { content:"My Model", size:"mid", align:"center" }, { collapsed:true });
+  addBlock("divider", {}, { collapsed:true });
+  addBlock("value", { label:"Battery", source:"RxBt", unit:"V", size:"normal", align:"left" }, { collapsed:true });
+  addBlock("value", { label:"RSSI", source:"1RSS", unit:"", size:"normal", align:"left" }, { collapsed:true });
+  addBlock("value", { label:"Altitude", source:"Alt", unit:"m", size:"normal", align:"left" }, { collapsed:true });
+  addBlock("bar", { label:"Battery", source:"RxBt", min:3.0, max:4.2, showLabel:true }, { collapsed:true });
+  renderAll();
+});
+document.getElementById("presetClear").addEventListener("click", () => {
+  stack = []; uidCounter = 1;
+  renderAll();
+});
+
+/* ---------------- copy / download ---------------- */
+const toastEl = document.getElementById("toast");
+let toastTimer = null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600);
+}
+
+async function copyCode(){
+  const { code } = buildFullScript();
+  try{
+    await navigator.clipboard.writeText(code);
+    toast("Code copied ✓");
+  }catch(e){
+    try{
+      const ta = document.createElement("textarea");
+      ta.value = code; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast("Code copied ✓");
+    }catch(e2){
+      toast("Couldn't copy — please select the text manually");
+    }
+  }
+}
+
+let downloadsCap = null;
+if(typeof claude !== "undefined" && claude && claude.use){
+  claude.use("downloads").then(d => {
+    downloadsCap = d;
+    if(!d) document.getElementById("downloadBtn").style.display = "none";
+  }).catch(()=>{ document.getElementById("downloadBtn").style.display = "none"; });
+} else {
+  document.getElementById("downloadBtn").style.display = "none";
+}
+
+async function downloadCode(){
+  const { code, fname } = buildFullScript();
+  const txtName = fname.replace(/\.lua$/,"") + ".txt";
+  if(!downloadsCap){
+    toast("Download not available here — please copy the code");
+    return;
+  }
+  try{
+    await downloadsCap.save({ filename: txtName, data: code });
+    toast("Saved — rename to .lua ✓");
+  }catch(e){
+    if(e && e.code === "declined") return;
+    toast("Download failed — please copy the code");
+  }
+}
+
+document.getElementById("copyBtn").addEventListener("click", copyCode);
+document.getElementById("downloadBtn").addEventListener("click", downloadCode);
+
+/* ---------------- misc ui ---------------- */
+document.getElementById("bannerClose").addEventListener("click", () => {
+  document.getElementById("safetyBanner").style.display = "none";
+});
+const howModal = document.getElementById("howModal");
+document.getElementById("howBtn").addEventListener("click", () => howModal.classList.add("show"));
+document.getElementById("howClose").addEventListener("click", () => howModal.classList.remove("show"));
+howModal.addEventListener("click", e => { if(e.target === howModal) howModal.classList.remove("show"); });
+
+/* ---------------- init ---------------- */
+addBlock("text", { content:"My Model", size:"mid", align:"center" }, { collapsed:true });
+addBlock("value", { label:"Battery", source:"RxBt", unit:"V", size:"normal", align:"left" }, { collapsed:true });
+addBlock("bar", { label:"Battery", source:"RxBt", min:3.0, max:4.2, showLabel:true }, { collapsed:true });
+renderAll();
+})();
+</script>
